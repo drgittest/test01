@@ -7,8 +7,8 @@ ALGORITHM = "HS256"
 
 class JWTAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
-        # Allow all requests to /login and /register (with or without trailing slash)
-        if request.url.path.rstrip('/') in ["/login", "/register"]:
+        # Allow all requests to /login, /register, /orders, and /orders/create (with or without trailing slash)
+        if request.url.path.rstrip('/') in ["/login", "/register", "/orders", "/orders/create"]:
             return await call_next(request)
         token = request.session.get("access_token")
         if not token:

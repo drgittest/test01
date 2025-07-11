@@ -17,3 +17,15 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     login_id = Column(String(255), unique=True, index=True, nullable=False)
     password = Column(String(255), nullable=False)
+
+class Order(Base):
+    __tablename__ = "orders"
+    id = Column(Integer, primary_key=True, index=True)
+    order_number = Column(String(50), unique=True, index=True, nullable=False)
+    customer_name = Column(String(255), nullable=False)
+    item = Column(String(255), nullable=False)
+    quantity = Column(Integer, nullable=False)
+    price = Column(Integer, nullable=False)
+    status = Column(String(50), nullable=False, default="pending")
+    created_at = Column(String(50), nullable=False)
+    updated_at = Column(String(50), nullable=False)

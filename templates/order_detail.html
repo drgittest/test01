@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head><title>Order Detail</title></head>
+<body>
+    {% if request.session['access_token'] %}
+    <nav>
+        <a href="/">ホーム</a> |
+        <a href="/orders">注文一覧</a> |
+        <a href="/logout">ログアウト</a>
+    </nav>
+    {% endif %}
+    <h1>Order Detail</h1>
+    <ul>
+        <li>ID: {{ order.id }}</li>
+        <li>Order Number: {{ order.order_number }}</li>
+        <li>Customer Name: {{ order.customer_name }}</li>
+        <li>Item: {{ order.item }}</li>
+        <li>Quantity: {{ order.quantity }}</li>
+        <li>Price: {{ order.price }}</li>
+        <li>Status: {{ order.status }}</li>
+        <li>Created At: {{ order.created_at }}</li>
+        <li>Updated At: {{ order.updated_at }}</li>
+    </ul>
+    <a href="/orders/{{ order.id }}/edit">Edit</a> |
+    <a href="/orders">Back to Order List</a>
+</body>
+</html> 

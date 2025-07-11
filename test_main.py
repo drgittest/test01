@@ -182,17 +182,21 @@ def test_order_detail():
         db.add(order)
         db.commit()
         order_id = order.id
-    # Access the order detail page as an authenticated user
+    
+    # Test that the old order detail route returns 404 (since we replaced it with modal)
     response = client.get(f"/orders/{order_id}")
+    assert response.status_code == 404
+    
+    # Test that the API endpoint works for modal functionality
+    response = client.get(f"/api/orders/{order_id}")
     assert response.status_code == 200
-    assert "Order Detail" in response.text
-    assert "ORD001" in response.text
-    assert "Alice" in response.text
-    assert "Widget" in response.text
-    assert "5" in response.text
-    assert "1000" in response.text
-    assert "pending" in response.text
-    assert "Back to Order List" in response.text 
+    data = response.json()
+    assert data["order_number"] == "ORD001"
+    assert data["customer_name"] == "Alice"
+    assert data["item"] == "Widget"
+    assert data["quantity"] == 5
+    assert data["price"] == 1000
+    assert data["status"] == "pending" 
 
 
 def test_order_edit_get():
@@ -227,7 +231,7 @@ def test_order_edit_get():
     assert "Quantity" in response.text
     assert "Price" in response.text
     assert "Status" in response.text
-    assert "Back to Order Detail" in response.text 
+    assert "Back to Orders List" in response.text 
 
 
 def test_order_edit_post():

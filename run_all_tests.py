@@ -42,9 +42,39 @@ def check_server_running():
     except:
         return False
 
+def create_visual_baselines():
+    """Create baseline screenshots for visual regression tests."""
+    print("🖼️  Creating Visual Test Baselines")
+    print("=" * 60)
+    
+    # Check if server is running
+    if not check_server_running():
+        print("⚠️  FastAPI server not running on port 8000")
+        print("   Please run 'uvicorn main:app --reload --port 8000' in another terminal")
+        print("   Then run this script again with --create-baselines")
+        return False
+    
+    print("✅ Server is running on port 8000")
+    
+    # Create baselines using comprehensive visual test
+    print("\n📋 Creating comprehensive visual baselines...")
+    baseline_result = run_command("cd tests/visual && python comprehensive_visual_test.py --create-baselines", "Create Visual Baselines")
+    
+    if baseline_result:
+        print("🎉 Visual baselines created successfully!")
+        print("📸 Baseline screenshots saved to tests/visual/baseline/")
+        return True
+    else:
+        print("❌ Failed to create visual baselines")
+        return False
+
 def main():
     print("🚀 Starting Comprehensive Test Suite")
     print("=" * 60)
+    
+    # Check for baseline creation mode
+    if len(sys.argv) > 1 and sys.argv[1] == "--create-baselines":
+        return 0 if create_visual_baselines() else 1
     
     # Track test results
     results = []
@@ -70,12 +100,25 @@ def main():
     integration_result = run_command("python tests/integration_test.py", "Integration Tests")
     results.append(("Integration Tests", integration_result))
     
-    # 4. Run visual regression tests
-    print("\n📋 Step 4: Running visual regression tests...")
-    visual_result = run_command("cd tests/visual && python simple_visual_test.py", "Visual Regression Tests")
+    # 4. Run comprehensive visual regression tests
+    print("\n📋 Step 4: Running comprehensive visual regression tests...")
+    visual_command = "cd tests/visual && python comprehensive_visual_test.py --headless"
+    if "--create-baselines" in sys.argv:
+        visual_command += " --create-baselines"
+    visual_result = run_command(visual_command, "Comprehensive Visual Tests")
     results.append(("Visual Tests", visual_result))
     
-    # 5. Summary
+    # 5. Run legacy visual tests (for backward compatibility)
+    print("\n📋 Step 5: Running legacy visual tests...")
+    legacy_visual_result = run_command("cd tests/visual && python simple_visual_test.py", "Legacy Visual Tests")
+    results.append(("Legacy Visual Tests", legacy_visual_result))
+    
+    # 6. Run modal design tests
+    print("\n📋 Step 6: Running modal design tests...")
+    modal_result = run_command("cd tests/visual && python test_modal_design.py", "Modal Design Tests")
+    results.append(("Modal Tests", modal_result))
+    
+    # 7. Summary
     print("\n" + "="*60)
     print("📊 TEST SUMMARY")
     print("="*60)
@@ -93,9 +136,17 @@ def main():
     
     if passed == total:
         print("🎉 All tests passed! Your application is ready for production.")
+        print("\n💡 Tips:")
+        print("  - Run with '--create-baselines' to update visual baselines")
+        print("  - Visual tests require the server to be running on port 8000")
+        print("  - Check tests/visual/screenshots/ for visual test outputs")
         return 0
     else:
         print("⚠️  Some tests failed. Please review the output above.")
+        print("\n🔍 Troubleshooting:")
+        print("  - For visual test failures, check tests/visual/screenshots/")
+        print("  - Update baselines if UI changes are intentional")
+        print("  - Ensure server is running for integration/visual tests")
         return 1
 
 if __name__ == "__main__":

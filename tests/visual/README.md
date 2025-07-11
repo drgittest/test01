@@ -1,50 +1,109 @@
-# Visual Testing Documentation
+# Visual Regression Testing Suite
 
 ## Overview
-This directory contains automated visual testing tools for the order management system, specifically designed to test the modal functionality and ensure consistent UI appearance across different scenarios.
+
+This comprehensive visual regression testing suite ensures UI consistency across all application pages and devices. The system provides automated screenshot comparison, baseline management, performance reporting, and CI/CD integration.
+
+## Features
+
+- **Comprehensive Page Coverage**: Tests all application pages (login, register, orders, modals, UI components)
+- **Multi-Device Support**: Desktop, laptop, tablet, and mobile viewport testing
+- **Advanced Baseline Management**: Versioned baselines with backup/restore capabilities
+- **Performance Reporting**: Detailed HTML and JSON reports with metrics
+- **CI/CD Integration**: Docker containerization and GitHub Actions workflow
+- **Test Data Management**: Automated test data generation and isolation
+- **Similarity Analysis**: Multiple comparison algorithms with configurable thresholds
 
 ## Architecture
 - **Selenium WebDriver**: Browser automation for interaction testing
-- **Pillow (PIL)**: Image processing and comparison
+- **Pillow (PIL)**: Advanced image processing and comparison
 - **ChromeDriver**: Chrome browser driver for Selenium
-- **Baseline Screenshots**: Reference images for comparison
+- **SQLite Database**: Test results and performance metrics storage
+- **Jinja2 Templates**: HTML report generation
+- **Docker**: Containerization for CI/CD
+- **GitHub Actions**: Automated testing workflow
 
-## Setup Instructions
+## Quick Start
 
-### 1. Install Dependencies
-```bash
-# Install Python packages
-pip install selenium pillow
+### Prerequisites
 
-# Install ChromeDriver (macOS with Homebrew)
-brew install chromedriver
+1. **Python 3.9+** with required packages:
+   ```bash
+   pip install -r requirements.txt
+   pip install selenium pillow jinja2 faker
+   ```
 
-# Verify ChromeDriver installation
-chromedriver --version
-```
+2. **Chrome and ChromeDriver**:
+   ```bash
+   # macOS
+   brew install chrome chromedriver
+   
+   # Linux
+   sudo apt-get install chromium-browser chromium-chromedriver
+   ```
 
-### 2. Environment Setup
-```bash
-# Ensure the FastAPI server is running
-cd /path/to/project
-uvicorn main:app --reload --port 8000
+3. **Application Server**: Ensure your FastAPI server is running on `http://localhost:8000`
 
-# In another terminal, navigate to visual tests
-cd tests/visual
-```
+### Running Tests
 
-### 3. Directory Structure
+1. **Basic Test Run**:
+   ```bash
+   python comprehensive_visual_test.py
+   ```
+
+2. **Create Baseline Images** (first time setup):
+   ```bash
+   python comprehensive_visual_test.py --create-baselines
+   ```
+
+3. **Run with Specific Viewport**:
+   ```bash
+   python comprehensive_visual_test.py --viewport mobile
+   ```
+
+4. **Run in Visible Browser** (for debugging):
+   ```bash
+   python comprehensive_visual_test.py --no-headless
+   ```
+
+## Directory Structure
+
 ```
 tests/visual/
-├── baseline/                 # Reference screenshots
-│   ├── orders_list.png      # Baseline orders list page
-│   └── modal_open.png       # Baseline modal in open state
-├── screenshots/             # Generated test screenshots
-├── simple_visual_test.py    # Simplified visual regression test
-├── test_modal_design.py     # Comprehensive modal testing
-├── create_baseline_screenshots.py  # Baseline creation script
-├── run_tests.py             # Test runner
-└── README.md               # This documentation
+├── README.md                      # This documentation
+├── BASELINE_SYSTEM.md             # Baseline management documentation
+├── 
+├── # Core Test Framework
+├── base_visual_test.py            # Base classes and utilities
+├── comprehensive_visual_test.py   # Main test runner
+├── 
+├── # Page-Specific Tests
+├── login_visual_test.py           # Login page tests
+├── register_visual_test.py        # Registration page tests
+├── orders_visual_test.py          # Orders list page tests
+├── order_create_visual_test.py    # Order creation page tests
+├── order_edit_visual_test.py      # Order editing page tests
+├── enhanced_modal_visual_test.py  # Modal functionality tests
+├── ui_components_visual_test.py   # UI components tests
+├── 
+├── # Infrastructure
+├── baseline_manager.py            # Baseline creation and management
+├── baseline_comparator.py         # Image comparison and analysis
+├── visual_test_reporter.py        # Test reporting system
+├── test_data_manager.py           # Test data generation
+├── test_isolation_manager.py      # Test isolation and cleanup
+├── 
+├── # CI/CD Integration
+├── Dockerfile.visual-tests        # Docker container for CI/CD
+├── docker-entrypoint.sh           # Docker entrypoint script
+├── 
+├── # Test Assets
+├── baseline/                      # Baseline images
+├── screenshots/                   # Current test screenshots
+├── diff/                         # Difference images
+├── reports/                      # Generated reports
+├── fixtures/                     # Test data fixtures
+└── isolation/                    # Test isolation data
 ```
 
 ## Usage

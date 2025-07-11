@@ -1,27 +1,83 @@
 <!DOCTYPE html>
 <html>
-<head><title>Order Detail</title></head>
-<body>
+<head>
+    <title>Order Detail</title>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
     {% if request.session['access_token'] %}
-    <nav>
-        <a href="/">ホーム</a> |
-        <a href="/orders">注文一覧</a> |
-        <a href="/logout">ログアウト</a>
+    <nav class="bg-white shadow-lg mb-6">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex space-x-8">
+                    <a href="/" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">ホーム</a>
+                    <a href="/orders" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">注文一覧</a>
+                    <a href="/logout" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">ログアウト</a>
+                </div>
+            </div>
+        </div>
     </nav>
     {% endif %}
-    <h1>Order Detail</h1>
-    <ul>
-        <li>ID: {{ order.id }}</li>
-        <li>Order Number: {{ order.order_number }}</li>
-        <li>Customer Name: {{ order.customer_name }}</li>
-        <li>Item: {{ order.item }}</li>
-        <li>Quantity: {{ order.quantity }}</li>
-        <li>Price: {{ order.price }}</li>
-        <li>Status: {{ order.status }}</li>
-        <li>Created At: {{ order.created_at }}</li>
-        <li>Updated At: {{ order.updated_at }}</li>
-    </ul>
-    <a href="/orders/{{ order.id }}/edit">Edit</a> |
-    <a href="/orders">Back to Order List</a>
+
+    <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md mt-10">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Order Detail</h1>
+        <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">ID</label>
+                    <p class="mt-1 text-sm text-gray-900">{{ order.id }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Order Number</label>
+                    <p class="mt-1 text-sm text-gray-900">{{ order.order_number }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Customer Name</label>
+                    <p class="mt-1 text-sm text-gray-900">{{ order.customer_name }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Item</label>
+                    <p class="mt-1 text-sm text-gray-900">{{ order.item }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Quantity</label>
+                    <p class="mt-1 text-sm text-gray-900">{{ order.quantity }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Price</label>
+                    <p class="mt-1 text-sm text-gray-900">{{ order.price }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Status</label>
+                    <p class="mt-1 text-sm text-gray-900">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                            {% if order.status == 'completed' %}bg-green-100 text-green-800
+                            {% elif order.status == 'pending' %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ order.status }}
+                        </span>
+                    </p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Created At</label>
+                    <p class="mt-1 text-sm text-gray-900">{{ order.created_at }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Updated At</label>
+                    <p class="mt-1 text-sm text-gray-900">{{ order.updated_at }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="mt-6 flex items-center justify-between">
+            <a href="/orders" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                Back to Order List
+            </a>
+            <a href="/orders/{{ order.id }}/edit"
+               class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Edit
+            </a>
+        </div>
+    </div>
 </body>
-</html> 
+</html>

@@ -1,0 +1,300 @@
+name: Visual Regression Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run daily at 6 AM UTC
+    - cron: '0 6 * * *'
+
+jobs:
+  visual-tests:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        viewport: [desktop, mobile]
+        browser: [chrome]
+      fail-fast: false
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Cache Node dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install jinja2 faker pytest-html pytest-json-report
+    
+    - name: Install Node dependencies
+      run: npm install
+    
+    - name: Install Chrome
+      uses: browser-actions/setup-chrome@latest
+    
+    - name: Install ChromeDriver
+      uses: nanasess/setup-chromedriver@master
+    
+    - name: Set up test environment
+      run: |
+        # Create test directories
+        mkdir -p tests/visual/screenshots
+        mkdir -p tests/visual/baseline
+        mkdir -p tests/visual/reports
+        mkdir -p tests/visual/fixtures
+        
+        # Set environment variables
+        echo "VISUAL_TEST_ENV=ci" >> $GITHUB_ENV
+        echo "VISUAL_TEST_BASE_URL=http://localhost:8000" >> $GITHUB_ENV
+        echo "VISUAL_TEST_HEADLESS=1" >> $GITHUB_ENV
+        echo "VISUAL_TEST_CI=1" >> $GITHUB_ENV
+        echo "VISUAL_TEST_VIEWPORT=${{ matrix.viewport }}" >> $GITHUB_ENV
+        echo "VISUAL_TEST_BROWSER=${{ matrix.browser }}" >> $GITHUB_ENV
+    
+    - name: Download baseline images
+      uses: actions/download-artifact@v3
+      with:
+        name: baseline-images-${{ matrix.viewport }}
+        path: tests/visual/baseline
+      continue-on-error: true
+    
+    - name: Start application server
+      run: |
+        # Start the FastAPI server in background
+        uvicorn main:app --host 0.0.0.0 --port 8000 &
+        SERVER_PID=$!
+        echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+        
+        # Wait for server to start
+        sleep 10
+        
+        # Check if server is running
+        curl -f http://localhost:8000 || exit 1
+        
+        echo "Server started successfully"
+    
+    - name: Create test data
+      run: |
+        cd tests/visual
+        if [ -f "test_data_manager.py" ]; then
+          python test_data_manager.py generate --users 3 --orders 10 --force
+          python test_data_manager.py seed --force
+        fi
+    
+    - name: Generate baseline images (if needed)
+      run: |
+        cd tests/visual
+        if [ ! -d "baseline" ] || [ -z "$(ls -A baseline)" ]; then
+          echo "Creating baseline images..."
+          python baseline_manager.py generate --viewport ${{ matrix.viewport }}
+        fi
+    
+    - name: Run visual regression tests
+      run: |
+        cd tests/visual
+        python comprehensive_visual_test.py --viewport ${{ matrix.viewport }}
+    
+    - name: Generate test reports
+      run: |
+        cd tests/visual
+        if [ -f "visual_test_reporter.py" ]; then
+          # Get the latest session ID
+          SESSION_ID=$(python -c "import sqlite3; conn = sqlite3.connect('reports/test_results.db'); cursor = conn.cursor(); cursor.execute('SELECT id FROM test_sessions ORDER BY started_at DESC LIMIT 1'); result = cursor.fetchone(); print(result[0] if result else 'unknown'); conn.close()" 2>/dev/null || echo "unknown")
+          
+          if [ "$SESSION_ID" != "unknown" ]; then
+            python visual_test_reporter.py report "$SESSION_ID" --format both
+            python visual_test_reporter.py ci-metrics "$SESSION_ID" --output reports/ci_metrics.json
+          fi
+        fi
+    
+    - name: Run baseline comparison
+      run: |
+        cd tests/visual
+        if [ -f "baseline_comparator.py" ]; then
+          python baseline_comparator.py compare --report
+        fi
+    
+    - name: Check test results
+      run: |
+        cd tests/visual
+        if [ -f "reports/ci_metrics.json" ]; then
+          # Check if tests passed
+          FAILED_TESTS=$(python -c "import json; data = json.load(open('reports/ci_metrics.json')); print(data.get('failed_tests', 0))")
+          
+          if [ "$FAILED_TESTS" -gt "0" ]; then
+            echo "❌ $FAILED_TESTS visual tests failed"
+            exit 1
+          else
+            echo "✅ All visual tests passed"
+          fi
+        fi
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: visual-test-results-${{ matrix.viewport }}
+        path: |
+          tests/visual/reports/
+          tests/visual/screenshots/
+          tests/visual/diff/
+        retention-days: 30
+    
+    - name: Upload baseline images
+      uses: actions/upload-artifact@v3
+      if: success()
+      with:
+        name: baseline-images-${{ matrix.viewport }}
+        path: tests/visual/baseline/
+        retention-days: 90
+    
+    - name: Upload diff images
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: diff-images-${{ matrix.viewport }}
+        path: tests/visual/diff/
+        retention-days: 30
+    
+    - name: Comment on PR
+      uses: actions/github-script@v6
+      if: github.event_name == 'pull_request' && always()
+      with:
+        script: |
+          const fs = require('fs');
+          const path = 'tests/visual/reports/ci_metrics.json';
+          
+          if (fs.existsSync(path)) {
+            const metrics = JSON.parse(fs.readFileSync(path, 'utf8'));
+            
+            const status = metrics.status === 'passed' ? '✅' : '❌';
+            const passRate = metrics.pass_rate.toFixed(1);
+            
+            const comment = `
+            ## Visual Test Results (${{ matrix.viewport }})
+            
+            ${status} **Status**: ${metrics.status}
+            📊 **Pass Rate**: ${passRate}%
+            🧪 **Total Tests**: ${metrics.total_tests}
+            ✅ **Passed**: ${metrics.passed_tests}
+            ❌ **Failed**: ${metrics.failed_tests}
+            ⚠️ **Errors**: ${metrics.error_tests}
+            📈 **Avg Similarity**: ${metrics.avg_similarity.toFixed(1)}%
+            ⏱️ **Duration**: ${metrics.total_duration.toFixed(1)}s
+            
+            ${metrics.failures.length > 0 ? `
+            ### Failed Tests:
+            ${metrics.failures.map(f => `- **${f.test_name}** (${f.page_name}@${f.device}): ${f.similarity.toFixed(1)}% similarity`).join('\n')}
+            ` : ''}
+            
+            View detailed results in the [Actions tab](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          }
+    
+    - name: Cleanup
+      if: always()
+      run: |
+        # Kill server if it's running
+        if [ ! -z "$SERVER_PID" ]; then
+          kill $SERVER_PID 2>/dev/null || true
+        fi
+        
+        # Clean up test data
+        cd tests/visual
+        if [ -f "test_data_manager.py" ]; then
+          python test_data_manager.py cleanup 2>/dev/null || true
+        fi
+        
+        # Clean up test isolation
+        if [ -f "test_isolation_manager.py" ]; then
+          python test_isolation_manager.py cleanup 2>/dev/null || true
+        fi
+
+  # Job to create baseline images for new branches
+  create-baselines:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: visual-tests
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install jinja2 faker
+    
+    - name: Install Chrome
+      uses: browser-actions/setup-chrome@latest
+    
+    - name: Install ChromeDriver
+      uses: nanasess/setup-chromedriver@master
+    
+    - name: Start application server
+      run: |
+        uvicorn main:app --host 0.0.0.0 --port 8000 &
+        sleep 10
+        curl -f http://localhost:8000 || exit 1
+    
+    - name: Create test data
+      run: |
+        cd tests/visual
+        if [ -f "test_data_manager.py" ]; then
+          python test_data_manager.py generate --users 3 --orders 10 --force
+          python test_data_manager.py seed --force
+        fi
+    
+    - name: Generate baseline images
+      run: |
+        cd tests/visual
+        python baseline_manager.py generate
+    
+    - name: Upload baseline images
+      uses: actions/upload-artifact@v3
+      with:
+        name: baseline-images-all
+        path: tests/visual/baseline/
+        retention-days: 365

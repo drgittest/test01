@@ -1,26 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Order List</title>
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 min-h-screen">
-    {% if request.session['access_token'] %}
-    <nav class="bg-white shadow-lg mb-6">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between h-16">
-                <div class="flex space-x-8">
-                    <a href="/" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">ホーム</a>
-                    <a href="/orders" class="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium">注文一覧</a>
-                    <a href="/logout" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">ログアウト</a>
-                </div>
-            </div>
-        </div>
-    </nav>
-    {% endif %}
-    
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" x-data="orderModal()">
+{% extends "base.html" %}
+
+{% block title %}Order List{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" x-data="orderModal()">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-gray-900">Order List</h1>
             <a href="/orders/create" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
@@ -267,5 +250,4 @@
             }
         }
     </script>
-</body>
-</html> 
+{% endblock %}

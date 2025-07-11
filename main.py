@@ -202,3 +202,7 @@ app = Starlette(
         Middleware(JWTAuthMiddleware)
     ]
 )
+
+# Serve static assets (built Tailwind CSS, images, etc.)
+from starlette.staticfiles import StaticFiles
+app.mount("/static", StaticFiles(directory="static"), name="static")

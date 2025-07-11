@@ -1,18 +1,46 @@
-<!DOCTYPE html>
-<html>
-<head><title>Edit Order</title></head>
-<body>
-    <h1>Edit Order</h1>
-    <form method="post">
-        <label>Order Number: <input type="text" name="order_number" value="{{ order.order_number }}" required></label><br>
-        <label>Customer Name: <input type="text" name="customer_name" value="{{ order.customer_name }}" required></label><br>
-        <label>Item: <input type="text" name="item" value="{{ order.item }}" required></label><br>
-        <label>Quantity: <input type="number" name="quantity" value="{{ order.quantity }}" required></label><br>
-        <label>Price: <input type="number" name="price" value="{{ order.price }}" required></label><br>
-        <label>Status: <input type="text" name="status" value="{{ order.status }}"></label><br>
-        <button type="submit">Update</button>
-    </form>
-    <a href="/orders">Back to Orders List</a>
-    {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
-</body>
-</html> 
+{% extends "base.html" %}
+
+{% block title %}Edit Order{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-gray-900 mb-4">Edit Order</h1>
+{% if error %}
+<p class="text-red-600 mb-4">{{ error }}</p>
+{% endif %}
+<form method="post" class="space-y-4">
+  <div>
+    <label class="block text-sm font-medium text-gray-700">Order Number</label>
+    <input type="text" name="order_number" value="{{ order.order_number }}" required
+           class="mt-1 w-full border-gray-300 rounded px-3 py-2" />
+  </div>
+  <div>
+    <label class="block text-sm font-medium text-gray-700">Customer Name</label>
+    <input type="text" name="customer_name" value="{{ order.customer_name }}" required
+           class="mt-1 w-full border-gray-300 rounded px-3 py-2" />
+  </div>
+  <div>
+    <label class="block text-sm font-medium text-gray-700">Item</label>
+    <input type="text" name="item" value="{{ order.item }}" required
+           class="mt-1 w-full border-gray-300 rounded px-3 py-2" />
+  </div>
+  <div>
+    <label class="block text-sm font-medium text-gray-700">Quantity</label>
+    <input type="number" name="quantity" value="{{ order.quantity }}" required
+           class="mt-1 w-full border-gray-300 rounded px-3 py-2" />
+  </div>
+  <div>
+    <label class="block text-sm font-medium text-gray-700">Price</label>
+    <input type="number" name="price" value="{{ order.price }}" required
+           class="mt-1 w-full border-gray-300 rounded px-3 py-2" />
+  </div>
+  <div>
+    <label class="block text-sm font-medium text-gray-700">Status</label>
+    <input type="text" name="status" value="{{ order.status }}"
+           class="mt-1 w-full border-gray-300 rounded px-3 py-2" />
+  </div>
+  <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Update</button>
+</form>
+<p class="mt-4">
+  <a href="/orders" class="text-blue-600 hover:underline">Back to Orders List</a>
+</p>
+{% endblock %}

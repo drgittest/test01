@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head><title>Create Order</title></head>
+<body>
+    {% if request.session['access_token'] %}
+    <nav>
+        <a href="/">ホーム</a> |
+        <a href="/orders">注文一覧</a> |
+        <a href="/logout">ログアウト</a>
+    </nav>
+    {% endif %}
+    <h1>Create Order</h1>
+    <form method="post">
+        <label>Order Number: <input type="text" name="order_number" required></label><br>
+        <label>Customer Name: <input type="text" name="customer_name" required></label><br>
+        <label>Item: <input type="text" name="item" required></label><br>
+        <label>Quantity: <input type="number" name="quantity" required></label><br>
+        <label>Price: <input type="number" name="price" required></label><br>
+        <label>Status: <input type="text" name="status" value="pending"></label><br>
+        <button type="submit">Create</button>
+    </form>
+    <a href="/orders">Back to Order List</a>
+    {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+</body>
+</html> 

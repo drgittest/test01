@@ -5,8 +5,14 @@
             content="python test page"
         /></head>
 <body>
+    {% if user %}
+    <nav>
+        <a href="/">ホーム</a> |
+        <a href="/orders">注文一覧</a> |
+        <a href="/logout">ログアウト</a>
+    </nav>
+    {% endif %}
     <h1>ホーム</h1>
     <p>こんにちは、{{ user.user_id }} さん！</p>
-    <a href="/logout">ログアウト</a>
 </body>
 </html>

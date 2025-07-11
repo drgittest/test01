@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head><title>Edit Order</title></head>
+<body>
+    <h1>Edit Order</h1>
+    <form method="post">
+        <label>Order Number: <input type="text" name="order_number" value="{{ order.order_number }}" required></label><br>
+        <label>Customer Name: <input type="text" name="customer_name" value="{{ order.customer_name }}" required></label><br>
+        <label>Item: <input type="text" name="item" value="{{ order.item }}" required></label><br>
+        <label>Quantity: <input type="number" name="quantity" value="{{ order.quantity }}" required></label><br>
+        <label>Price: <input type="number" name="price" value="{{ order.price }}" required></label><br>
+        <label>Status: <input type="text" name="status" value="{{ order.status }}"></label><br>
+        <button type="submit">Update</button>
+    </form>
+    <a href="/orders">Back to Orders List</a>
+    {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+</body>
+</html> 

@@ -1,18 +1,28 @@
 <!DOCTYPE html>
 <html>
-<head><title>ホーム</title><meta
-            name="description"
-            content="python test page"
-        /></head>
-<body>
+<head>
+    <title>ホーム</title>
+    <meta name="description" content="python test page" />
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
     {% if user %}
-    <nav>
-        <a href="/">ホーム</a> |
-        <a href="/orders">注文一覧</a> |
-        <a href="/logout">ログアウト</a>
+    <nav class="bg-white shadow-lg mb-6">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex space-x-8">
+                    <a href="/" class="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium">ホーム</a>
+                    <a href="/orders" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">注文一覧</a>
+                    <a href="/logout" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">ログアウト</a>
+                </div>
+            </div>
+        </div>
     </nav>
     {% endif %}
-    <h1>ホーム</h1>
-    <p>こんにちは、{{ user.user_id }} さん！</p>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">ホーム</h1>
+        <p class="text-gray-700">こんにちは、{{ user.user_id }} さん！</p>
+    </div>
 </body>
 </html>

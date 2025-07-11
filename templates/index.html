@@ -1,18 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head><title>ホーム</title><meta
-            name="description"
-            content="python test page"
-        /></head>
-<body>
-    {% if user %}
-    <nav>
-        <a href="/">ホーム</a> |
-        <a href="/orders">注文一覧</a> |
-        <a href="/logout">ログアウト</a>
-    </nav>
-    {% endif %}
-    <h1>ホーム</h1>
-    <p>こんにちは、{{ user.user_id }} さん！</p>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}ホーム{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-gray-900">ホーム</h1>
+<p class="mt-4">こんにちは、{{ user.user_id }} さん！</p>
+{% endblock %}

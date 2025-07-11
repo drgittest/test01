@@ -97,11 +97,16 @@ poetry.lock
 .DS_Store
 
 # Virtualenv
-env/
+env/*
 venv/
-ENV/
+ENV/*
 env.bak/
 venv.bak/
 
 # Remove .env from ignore so it can be created 
-env/ 
+env/*
+# Allow tracking of env/tasks
+!env/tasks/
+!env/tasks/**
+node_modules/
+static/css/tailwind.css
